@@ -3,6 +3,7 @@ using System.Net;
 using System.Threading;
 using System.IO.Compression;
 using System.Diagnostics;
+using Ionic.Zip;
 
 namespace IndieGoat.Net.SSH
 {
@@ -48,7 +49,10 @@ namespace IndieGoat.Net.SSH
                     client.DownloadFile(ApplicationURL, ApplicationZipDirectory);
 
                     //Extracts the update
-                    ZipFile.ExtractToDirectory(ApplicationZipDirectory, ApplicationDirectory);
+                    using (ZipFile zip = ZipFile.Read(ApplicationZipDirectory))
+                    {
+                        zip.ExtractAll(ApplicationDirectory);
+                    }
 
                 })); thread.Start();
             }
@@ -62,22 +66,19 @@ namespace IndieGoat.Net.SSH
         { SSHServiceProcess.Close(); }
         public bool ForwardLocalPort(string PORT, string LOCALHOST)
         {
-            StreamWriter stream = SSHServiceProcess.StandardInput;
-            stream.WriteLine("FORWARD " + PORT + " " + LOCALHOST);
-            stream.Close();
+            Thread thread = new Thread(new ThreadStart(() =>
+            {
+                while (!IsRunning) { }
+                StreamWriter stream = SSHServiceProcess.StandardInput;
+                stream.WriteLine("FORWARD " + PORT + " " + LOCALHOST);
+                stream.Close();
+
+            })); thread.Start();
 
             StreamReader o_stream = SSHServiceProcess.StandardOutput;
             string Output = o_stream.ReadLine();
 
-            if (Output == true.ToString())
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-            
+            return bool.Parse(Output);
         }
 
         #endregion
@@ -87,24 +88,30 @@ namespace IndieGoat.Net.SSH
         //Starts the ssh service, on command
         public void StartSSHService(string SSHIP, string SSHPORT, string SSHUSERNAME, string SSHPASSWORD)
         {
-
-            Process[] tmpProcess;
-
-            tmpProcess = Process.GetProcessesByName(ApplicationName);
-
-            try
+            Thread thread = new Thread(new ThreadStart(() =>
             {
-                if (tmpProcess[0] == null)
+                while(!File.Exists(ApplicationDirectory + ApplicationName)) { }
+
+                Process[] tmpProcess;
+
+                tmpProcess = Process.GetProcessesByName(ApplicationName);
+
+                try
                 {
-                    //Starts the process
-                    SSHServiceProcess = Process.Start(ApplicationDirectory + ApplicationName, SSHIP + " " + SSHPORT + " " + SSHUSERNAME + " " + SSHPASSWORD);
+                    if (tmpProcess[0] == null)
+                    {
+                        //Starts the process
+                        SSHServiceProcess = Process.Start(ApplicationDirectory + ApplicationName, SSHIP + " " + SSHPORT + " " + SSHUSERNAME + " " + SSHPASSWORD);
+                    }
+                    else
+                    {
+                        SSHServiceProcess = tmpProcess[0];
+                    }
                 }
-                else
-                {
-                    SSHServiceProcess = tmpProcess[0];
-                }
-            }
-            catch { SSHServiceProcess = Process.Start(ApplicationDirectory + ApplicationName, SSHIP + " " + SSHPORT + " " + SSHUSERNAME + " " + SSHPASSWORD); }
+                catch { SSHServiceProcess = Process.Start(ApplicationDirectory + ApplicationName, SSHIP + " " + SSHPORT + " " + SSHUSERNAME + " " + SSHPASSWORD); }
+
+                IsRunning = true;
+            })); thread.Start();
         }
 
         #endregion
