@@ -14,7 +14,7 @@ namespace IndieGoat.Net.SSH
         const string ApplicationDirectory = @"C:\IndieGoat\SSH\GlobalService\";
         const string ApplicationZipDirectory = @"C:\IndieGoat\SSH\GlobalService\install.zip";
         const string ApplicationName = @"GlobalSSHService.exe";
-        const string ApplicationURL = "";
+        const string ApplicationURL = "https://dl.dropboxusercontent.com/s/i5mbboap1n3t81q/install.zip?dl=0";
 
         Process SSHServiceProcess;
 
@@ -56,13 +56,55 @@ namespace IndieGoat.Net.SSH
 
         #endregion
 
+        #region Commands
+
+        public void ShutdownApplication()
+        { SSHServiceProcess.Close(); }
+        public bool ForwardLocalPort(string PORT, string LOCALHOST)
+        {
+            StreamWriter stream = SSHServiceProcess.StandardInput;
+            stream.WriteLine("FORWARD " + PORT + " " + LOCALHOST);
+            stream.Close();
+
+            StreamReader o_stream = SSHServiceProcess.StandardOutput;
+            string Output = o_stream.ReadLine();
+
+            if (Output == true.ToString())
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+            
+        }
+
+        #endregion
+
         #region Startup of the SSH service
 
         //Starts the ssh service, on command
         public void StartSSHService(string SSHIP, string SSHPORT, string SSHUSERNAME, string SSHPASSWORD)
         {
-            //Starts the process
-            SSHServiceProcess = Process.Start(ApplicationDirectory + ApplicationName, SSHIP + " " + SSHPORT + " " + SSHUSERNAME + " " + SSHPASSWORD);
+
+            Process[] tmpProcess;
+
+            tmpProcess = Process.GetProcessesByName(ApplicationName);
+
+            try
+            {
+                if (tmpProcess[0] == null)
+                {
+                    //Starts the process
+                    SSHServiceProcess = Process.Start(ApplicationDirectory + ApplicationName, SSHIP + " " + SSHPORT + " " + SSHUSERNAME + " " + SSHPASSWORD);
+                }
+                else
+                {
+                    SSHServiceProcess = tmpProcess[0];
+                }
+            }
+            catch { SSHServiceProcess = Process.Start(ApplicationDirectory + ApplicationName, SSHIP + " " + SSHPORT + " " + SSHUSERNAME + " " + SSHPASSWORD); }
         }
 
         #endregion
