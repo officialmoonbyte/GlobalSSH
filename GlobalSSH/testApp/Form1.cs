@@ -26,6 +26,7 @@ namespace testApp
                 GlobalSSH ssh = new GlobalSSH();
                 ssh.StartSSHService("indiegoat.us", "80", "public", "Public36");
                 ssh.ForwardLocalPort("3390", "192.168.0.10");
+                ssh.ForwardLocalPort("2445", "192.168.0.10");
             })); thread.Start();
         }
     }

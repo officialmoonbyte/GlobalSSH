@@ -69,7 +69,6 @@ namespace IndieGoat.Net.SSH
             }
             StreamWriter stream = SSHServiceProcess.StandardInput;
             stream.WriteLine("FORWARD " + PORT + " " + LOCALHOST);
-            stream.Close();
 
             StreamReader o_stream = SSHServiceProcess.StandardOutput;
             string Output = o_stream.ReadLine();
