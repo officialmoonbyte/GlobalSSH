@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GlobalSSH", "GlobalSSH\Glob
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GlobalSSHService", "GlobalSSHService\GlobalSSHService.csproj", "{8AE014FC-471D-419A-A042-DAC6F132FAC0}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "testApp", "testApp\testApp.csproj", "{ECDB308D-84A3-4490-A311-AD400006FA5B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{8AE014FC-471D-419A-A042-DAC6F132FAC0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8AE014FC-471D-419A-A042-DAC6F132FAC0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8AE014FC-471D-419A-A042-DAC6F132FAC0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{ECDB308D-84A3-4490-A311-AD400006FA5B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ECDB308D-84A3-4490-A311-AD400006FA5B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ECDB308D-84A3-4490-A311-AD400006FA5B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ECDB308D-84A3-4490-A311-AD400006FA5B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

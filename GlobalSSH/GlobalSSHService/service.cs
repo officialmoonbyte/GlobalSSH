@@ -1,5 +1,7 @@
-﻿using Renci.SshNet;
+﻿using GlobalDYNUpdater;
+using Renci.SshNet;
 using System;
+using System.Threading;
 
 namespace IndieGoat.Net.SSH.App
 {
@@ -16,20 +18,34 @@ namespace IndieGoat.Net.SSH.App
             string SSHUSERNAME = args[2];
             string SSHPASSWORD = args[3];
 
+            ILogger.AddToLog("SSH", "Started SSH request!");
+            ILogger.AddToLog("SSH", "SSHIP : " + SSHIP);
+            ILogger.AddToLog("SSH", "SSHPORT : " + SSHPORT);
+            ILogger.AddToLog("SSH", "SSHUSERNAME : " + SSHUSERNAME);
+            ILogger.AddToLog("SSH", "SSHPASSWORD : " + SSHPASSWORD);
+
+            ILogger.SetLoggingEvents();
+
             //SSH connection info
             PasswordConnectionInfo connectionInfo = new PasswordConnectionInfo(SSHIP, int.Parse(SSHPORT), SSHUSERNAME, SSHPASSWORD);
 
             //Declaring sshclient
             PublicResources.client = new SshClient(connectionInfo);
+            PublicResources.client.Connect();
 
             if (PublicResources.client.IsConnected)
             {
                 //Starts the console thread
                 mConsole.ConsoleThread();
 
-                //Loop so the application doesn't close
-                while (true) { }
             }
+            else
+            {
+                ILogger.AddToLog("SSH", "GlobalSSH is currently not connected to the server!");
+                ILogger.WriteLog();
+            }
+
+            while (true) { Thread.Sleep(50000); }
         }
     }
 }
