@@ -1,11 +1,15 @@
 ﻿using System.Threading;
 using System;
 using Renci.SshNet;
+using System.Collections.Generic;
 
 namespace IndieGoat.Net.SSH.App
 {
     public class mConsole
     {
+
+        public static List<int> PortForward = new List<int>();
+
         public static void ConsoleThread()
         {
             Thread thread = new Thread(new ThreadStart(() =>
@@ -44,6 +48,19 @@ namespace IndieGoat.Net.SSH.App
                             {
                                 Console.WriteLine(false.ToString());
                             }
+                        }
+                        if (Command[0] == "CHECK")
+                        {
+                            string CHECKPORT = Command[1];
+                            bool SendCommand = false;
+                            for(int i = 0; i > PortForward.Count; i++)
+                            {
+                                if (int.Parse(CHECKPORT) == PortForward[i])
+                                {
+                                    Console.WriteLine(true.ToString()); SendCommand = true;
+                                }
+                            }
+                            if (!SendCommand) Console.WriteLine(false.ToString());
                         }
                     }
                     catch { Console.WriteLine(false.ToString()); Console.WriteLine("Error!"); }

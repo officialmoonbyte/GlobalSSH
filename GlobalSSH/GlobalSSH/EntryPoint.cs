@@ -66,6 +66,7 @@ namespace IndieGoat.Net.SSH
             if (SSHServiceProcess.HasExited)
             {
                 Console.WriteLine("Process is currently closed!");
+                return;
             }
             StreamWriter stream = SSHServiceProcess.StandardInput;
             stream.WriteLine("FORWARD " + PORT + " " + LOCALHOST);
@@ -74,6 +75,7 @@ namespace IndieGoat.Net.SSH
             string Output = o_stream.ReadLine();
         }
 
+        
         #endregion
 
         #region Startup of the SSH service
