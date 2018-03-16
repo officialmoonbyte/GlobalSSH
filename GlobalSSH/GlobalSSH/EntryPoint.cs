@@ -17,6 +17,7 @@ namespace IndieGoat.Net.SSH
         const string ApplicationZipDirectory = @"C:\IndieGoat\SSH\GlobalService\install.zip";
         const string ApplicationName = @"GlobalSSHService.exe";
         const string ApplicationURL = "https://dl.dropboxusercontent.com/s/i5mbboap1n3t81q/install.zip?dl=0";
+        bool RedirectStandardOutput = false;
 
         Process SSHServiceProcess;
 
@@ -76,8 +77,11 @@ namespace IndieGoat.Net.SSH
             stream.WriteLine("FORWARD " + PORT + " " + LOCALHOST);
 
             //Get output of the command
-            StreamReader o_stream = SSHServiceProcess.StandardOutput;
-            Console.WriteLine(o_stream.ReadLine());
+            if (RedirectStandardOutput)
+            {
+                StreamReader o_stream = SSHServiceProcess.StandardOutput;
+                Console.WriteLine(o_stream.ReadLine());
+            }
         }
 
         public void CheckPort(string PORT)
@@ -95,20 +99,26 @@ namespace IndieGoat.Net.SSH
             stream.WriteLine("CHECK " + PORT);
 
             //Get output of the command
-            StreamReader o_Stream = SSHServiceProcess.StandardOutput;
-            Console.WriteLine(o_Stream.ReadLine());
+            if (RedirectStandardOutput)
+            {
+                StreamReader o_Stream = SSHServiceProcess.StandardOutput;
+                Console.WriteLine(o_Stream.ReadLine());
+            }
         }
         #endregion
 
         #region Startup of the SSH service
 
         //Starts the ssh service, on command
-        public void StartSSHService(string SSHIP, string SSHPORT, string SSHUSERNAME, string SSHPASSWORD, bool CreateNoWindow = true)
+        public void StartSSHService(string SSHIP, string SSHPORT, string SSHUSERNAME, string SSHPASSWORD, bool CreateNoWindow = true, bool RedirectOutput = true)
         {
+
+            RedirectStandardOutput = RedirectOutput;
+
             SSHServiceProcess = new Process();
             SSHServiceProcess.StartInfo.UseShellExecute = false;
             SSHServiceProcess.StartInfo.RedirectStandardInput = true;
-            SSHServiceProcess.StartInfo.RedirectStandardOutput = true;
+            SSHServiceProcess.StartInfo.RedirectStandardOutput = RedirectStandardOutput;
 
             SSHServiceProcess.StartInfo.FileName = ApplicationDirectory + ApplicationName;
             SSHServiceProcess.StartInfo.CreateNoWindow = CreateNoWindow;
