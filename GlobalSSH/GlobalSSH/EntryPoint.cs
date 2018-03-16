@@ -80,7 +80,7 @@ namespace IndieGoat.Net.SSH
             Console.WriteLine(o_stream.ReadLine());
         }
 
-        public void CHECKPORT(string PORT)
+        public void CheckPort(string PORT)
         {
             //Checks if the application has exited
             if (SSHServiceProcess.HasExited)
