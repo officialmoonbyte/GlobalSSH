@@ -63,19 +63,41 @@ namespace IndieGoat.Net.SSH
         { SSHServiceProcess.Close(); }
         public void ForwardLocalPort(string PORT, string LOCALHOST)
         {
+            //Checks if the application has exited
             if (SSHServiceProcess.HasExited)
             {
+                //Returns from the method if application is currently not running.
                 Console.WriteLine("Process is currently closed!");
                 return;
             }
+
+            //Get input of the command
             StreamWriter stream = SSHServiceProcess.StandardInput;
             stream.WriteLine("FORWARD " + PORT + " " + LOCALHOST);
 
+            //Get output of the command
             StreamReader o_stream = SSHServiceProcess.StandardOutput;
-            string Output = o_stream.ReadLine();
+            Console.WriteLine(o_stream.ReadLine());
         }
 
-        
+        public void CHECKPORT(string PORT)
+        {
+            //Checks if the application has exited
+            if (SSHServiceProcess.HasExited)
+            {
+                //Returns from the method if application is currently not running
+                Console.WriteLine("Process is currently closed!");
+                return;
+            }
+
+            //Inputs command
+            StreamWriter stream = SSHServiceProcess.StandardInput;
+            stream.WriteLine("CHECK " + PORT);
+
+            //Get output of the command
+            StreamReader o_Stream = SSHServiceProcess.StandardOutput;
+            Console.WriteLine(o_Stream.ReadLine());
+        }
         #endregion
 
         #region Startup of the SSH service
