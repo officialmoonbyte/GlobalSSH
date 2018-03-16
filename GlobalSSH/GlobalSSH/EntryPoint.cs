@@ -79,7 +79,7 @@ namespace IndieGoat.Net.SSH
         #region Startup of the SSH service
 
         //Starts the ssh service, on command
-        public void StartSSHService(string SSHIP, string SSHPORT, string SSHUSERNAME, string SSHPASSWORD)
+        public void StartSSHService(string SSHIP, string SSHPORT, string SSHUSERNAME, string SSHPASSWORD, bool CreateNoWindow = true)
         {
             SSHServiceProcess = new Process();
             SSHServiceProcess.StartInfo.UseShellExecute = false;
@@ -87,7 +87,7 @@ namespace IndieGoat.Net.SSH
             SSHServiceProcess.StartInfo.RedirectStandardOutput = true;
 
             SSHServiceProcess.StartInfo.FileName = ApplicationDirectory + ApplicationName;
-            SSHServiceProcess.StartInfo.CreateNoWindow = true;
+            SSHServiceProcess.StartInfo.CreateNoWindow = CreateNoWindow;
 
             SSHServiceProcess.StartInfo.Arguments = SSHIP + " " + SSHPORT + " " + SSHUSERNAME + " " + SSHPASSWORD;
             SSHServiceProcess.Start();
