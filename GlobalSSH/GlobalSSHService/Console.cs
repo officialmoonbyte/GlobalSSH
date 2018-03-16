@@ -43,6 +43,7 @@ namespace IndieGoat.Net.SSH.App
                             if (port.IsStarted)
                             {
                                 Console.WriteLine(true.ToString());
+                                PortForward.Add(int.Parse(PORT));
                             }
                             else
                             {

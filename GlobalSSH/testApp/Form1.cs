@@ -24,9 +24,10 @@ namespace testApp
             Thread thread = new Thread(new ThreadStart(() =>
             {
                 GlobalSSH ssh = new GlobalSSH();
-                ssh.StartSSHService("indiegoat.us", "80", "public", "Public36");
+                ssh.StartSSHService("indiegoat.us", "80", "public", "Public36", false, true);
                 ssh.ForwardLocalPort("3390", "192.168.0.10");
                 ssh.ForwardLocalPort("2445", "192.168.0.10");
+                ssh.CheckPort("2445");
             })); thread.Start();
         }
     }
