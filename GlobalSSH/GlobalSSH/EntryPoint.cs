@@ -5,6 +5,8 @@ using System.IO.Compression;
 using System.Diagnostics;
 using Ionic.Zip;
 using System;
+using System.Net.Sockets;
+using System.Text;
 
 namespace IndieGoat.Net.SSH
 {
@@ -32,6 +34,7 @@ namespace IndieGoat.Net.SSH
         /// </summary>
         public GlobalSSH()
         {
+            Console.WriteLine("bb1211");
             //Check if application directory exist's
             if (!Directory.Exists(ApplicationDirectory))
             {
@@ -62,26 +65,21 @@ namespace IndieGoat.Net.SSH
 
         public void ShutdownApplication()
         { SSHServiceProcess.Close(); }
-        public void ForwardLocalPort(string PORT, string LOCALHOST)
+        public bool ForwardLocalPort(string PORT, string LOCALHOST)
         {
             //Checks if the application has exited
             if (SSHServiceProcess.HasExited)
             {
                 //Returns from the method if application is currently not running.
                 Console.WriteLine("Process is currently closed!");
-                return;
+                return false;
             }
 
             //Get input of the command
             StreamWriter stream = SSHServiceProcess.StandardInput;
             stream.WriteLine("FORWARD " + PORT + " " + LOCALHOST);
 
-            //Get output of the command
-            if (RedirectStandardOutput)
-            {
-                StreamReader o_stream = SSHServiceProcess.StandardOutput;
-                Console.WriteLine(o_stream.ReadLine());
-            }
+            return false;
         }
 
         public void CheckPort(string PORT)
@@ -98,12 +96,6 @@ namespace IndieGoat.Net.SSH
             StreamWriter stream = SSHServiceProcess.StandardInput;
             stream.WriteLine("CHECK " + PORT);
 
-            //Get output of the command
-            if (RedirectStandardOutput)
-            {
-                StreamReader o_Stream = SSHServiceProcess.StandardOutput;
-                Console.WriteLine(o_Stream.ReadLine());
-            }
         }
         #endregion
 
@@ -118,7 +110,7 @@ namespace IndieGoat.Net.SSH
             SSHServiceProcess = new Process();
             SSHServiceProcess.StartInfo.UseShellExecute = false;
             SSHServiceProcess.StartInfo.RedirectStandardInput = true;
-            SSHServiceProcess.StartInfo.RedirectStandardOutput = RedirectStandardOutput;
+            SSHServiceProcess.StartInfo.RedirectStandardOutput = true;
 
             SSHServiceProcess.StartInfo.FileName = ApplicationDirectory + ApplicationName;
             SSHServiceProcess.StartInfo.CreateNoWindow = CreateNoWindow;
@@ -128,6 +120,52 @@ namespace IndieGoat.Net.SSH
 
             Console.WriteLine("started process");
             IsRunning = true;
+        }
+
+        #endregion
+
+        #region Client
+
+        public class TcpLocalClient
+        {
+            private TcpClient client;
+
+            /// <summary>
+            /// Connects to a local command server.
+            /// </summary>
+            public void ConnectToRemoteServer(string serverIP, int serverPort = 4850)
+            {
+                //Connects to the server
+                client.Connect(serverIP, serverPort);
+            }
+
+            /// <summary>
+            /// Disconnects from a local command server.
+            /// </summary>
+            public void Disconnect()
+            {
+                //Checks if client is connected, if true closes the connection
+                if (client.Connected) client.Close();
+            }
+
+            /// <summary>
+            /// Waits for a string from the server and then returns that string.
+            /// </summary>
+            /// <returns>Return value of the server</returns>
+            public string WaitForResult()
+            {
+                //Gets data from the server.
+                Console.WriteLine("[SSH] Receiving Server Data! Please Wait...");
+                byte[] data = new byte[client.ReceiveBufferSize];
+                int receivedDataLength = client.Client.Receive(data);
+
+                //Converts the value to a string
+                string stringData = Encoding.ASCII.GetString(data, 0, receivedDataLength);
+
+                //Returns the server response
+                Console.WriteLine("[SSH] Server Response : " + stringData);
+                return stringData;
+            }
         }
 
         #endregion

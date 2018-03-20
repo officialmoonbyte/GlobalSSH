@@ -79,6 +79,10 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\GlobalSSHService\GlobalSSHService.csproj">
+      <Project>{8ae014fc-471d-419a-a042-dac6f132fac0}</Project>
+      <Name>GlobalSSHService</Name>
+    </ProjectReference>
     <ProjectReference Include="..\GlobalSSH\GlobalSSH.csproj">
       <Project>{a487bf2b-037e-4be6-974d-a6991f6b39fe}</Project>
       <Name>GlobalSSH</Name>

@@ -25,9 +25,16 @@ namespace testApp
             {
                 GlobalSSH ssh = new GlobalSSH();
                 ssh.StartSSHService("indiegoat.us", "80", "public", "Public36", false, true);
-                ssh.ForwardLocalPort("3390", "192.168.0.10");
-                ssh.ForwardLocalPort("2445", "192.168.0.10");
+                bool b1 = ssh.ForwardLocalPort("3390", "192.168.0.11");
+                bool b2 = ssh.ForwardLocalPort("2445", "192.168.0.11");
+                bool b3 = ssh.ForwardLocalPort("3389", "192.168.0.11");
+
+                Console.WriteLine("b1 : " + b1);
+                Console.WriteLine("b2 : " + b2);
+                Console.WriteLine("b3 : " + b3);
+
                 ssh.CheckPort("2445");
+                Console.WriteLine("DONE!");
             })); thread.Start();
         }
     }
