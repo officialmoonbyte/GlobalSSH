@@ -42,12 +42,12 @@ namespace IndieGoat.Net.SSH.App
 
                             if (port.IsStarted)
                             {
-                                Console.WriteLine(true.ToString());
+                                service.server.SendClient(true.ToString());
                                 PortForward.Add(int.Parse(PORT));
                             }
                             else
                             {
-                                Console.WriteLine(false.ToString());
+                                service.server.SendClient(false.ToString());
                             }
                         }
                         if (Command[0] == "CHECK")
@@ -58,13 +58,13 @@ namespace IndieGoat.Net.SSH.App
                             {
                                 if (int.Parse(CHECKPORT) == PortForward[i])
                                 {
-                                    Console.WriteLine(true.ToString()); SendCommand = true;
+                                    service.server.SendClient(true.ToString()); SendCommand = true;
                                 }
                             }
-                            if (!SendCommand) Console.WriteLine(false.ToString());
+                            if (!SendCommand) service.server.SendClient(false.ToString());
                         }
                     }
-                    catch { Console.WriteLine(false.ToString()); Console.WriteLine("Error!"); }
+                    catch { service.server.SendClient(false.ToString()); Console.WriteLine("Error!"); }
                 }
             })); thread.Start();
         }

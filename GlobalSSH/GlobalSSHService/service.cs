@@ -1,4 +1,5 @@
 ﻿using GlobalDYNUpdater;
+using GlobalSSHService.Server;
 using Renci.SshNet;
 using System;
 using System.Threading;
@@ -7,6 +8,7 @@ namespace IndieGoat.Net.SSH.App
 {
     static class service
     {
+        public static Server server;
         /// <summary>
         /// The main entry point for the application.
         /// </summary>
@@ -25,6 +27,10 @@ namespace IndieGoat.Net.SSH.App
             ILogger.AddToLog("SSH", "SSHPASSWORD : " + SSHPASSWORD);
 
             ILogger.SetLoggingEvents();
+
+            //Start the tcp local server
+            server = new Server();
+            server.StartServer();
 
             //SSH connection info
             PasswordConnectionInfo connectionInfo = new PasswordConnectionInfo(SSHIP, int.Parse(SSHPORT), SSHUSERNAME, SSHPASSWORD);

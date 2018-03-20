@@ -23,8 +23,11 @@ namespace GlobalSSHService.Server
         /// </summary>
         public void SendClientInformation(string Information)
         {
-            //Sends client information
-            LocalClientConnection.Client.Send(Encoding.UTF8.GetBytes(Information));
+            try
+            {
+                //Sends client information
+                LocalClientConnection.Client.Send(Encoding.UTF8.GetBytes(Information));
+            } catch { }
         }
     }
 }

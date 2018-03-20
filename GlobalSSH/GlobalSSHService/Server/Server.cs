@@ -41,15 +41,19 @@ namespace GlobalSSHService.Server
             {
                 while (true)
                 {
-                    //Accepts tcp client
-                    var ClientTrack = ServerListener.AcceptTcpClientAsync();
+                    try
+                    {
+                        //Accepts tcp client
+                        var ClientTrack = ServerListener.AcceptTcpClientAsync();
 
-                    //Breaks out of the client loop if the client disconnects
-                    while (ClientTrack.Result == null) { break; }
+                        //Breaks out of the client loop if the client disconnects
+                        while (ClientTrack.Result == null) { break; }
 
-                    //Setup a new client
-                    ServerClient client = new ServerClient(ClientTrack.Result, ServerListener);
-                    clientList.Add(client);
+                        //Setup a new client
+                        ServerClient client = new ServerClient(ClientTrack.Result, ServerListener);
+                        clientList.Add(client);
+                    }
+                    catch { }
                 }
             })).Start();
         }

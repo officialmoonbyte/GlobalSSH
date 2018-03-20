@@ -33,7 +33,6 @@ namespace testApp
                 Console.WriteLine("b2 : " + b2);
                 Console.WriteLine("b3 : " + b3);
 
-                ssh.CheckPort("2445");
                 Console.WriteLine("DONE!");
             })); thread.Start();
         }

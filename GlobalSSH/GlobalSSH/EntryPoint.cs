@@ -18,12 +18,15 @@ namespace IndieGoat.Net.SSH
         const string ApplicationDirectory = @"C:\IndieGoat\SSH\GlobalService\";
         const string ApplicationZipDirectory = @"C:\IndieGoat\SSH\GlobalService\install.zip";
         const string ApplicationName = @"GlobalSSHService.exe";
+        const string ApplicationDefaultName = "GlobalSSHService";
         const string ApplicationURL = "https://dl.dropboxusercontent.com/s/i5mbboap1n3t81q/install.zip?dl=0";
         bool RedirectStandardOutput = false;
 
         Process SSHServiceProcess;
 
         bool IsRunning = false;
+
+        TcpLocalClient LocalClient;
         
         #endregion
 
@@ -57,6 +60,8 @@ namespace IndieGoat.Net.SSH
                     zip.ExtractAll(ApplicationDirectory);
                 }
             }
+
+            LocalClient = new TcpLocalClient();
         }
 
         #endregion
@@ -79,23 +84,24 @@ namespace IndieGoat.Net.SSH
             StreamWriter stream = SSHServiceProcess.StandardInput;
             stream.WriteLine("FORWARD " + PORT + " " + LOCALHOST);
 
-            return false;
+            //Gets the result from the server.
+            string ServerResult = LocalClient.WaitForResult();
+            return bool.Parse(ServerResult);
         }
 
-        public void CheckPort(string PORT)
+        public bool CheckPort(string PORT)
         {
             //Checks if the application has exited
             if (SSHServiceProcess.HasExited)
             {
                 //Returns from the method if application is currently not running
                 Console.WriteLine("Process is currently closed!");
-                return;
+                return false;
             }
 
-            //Inputs command
-            StreamWriter stream = SSHServiceProcess.StandardInput;
-            stream.WriteLine("CHECK " + PORT);
-
+            //Gets the result from the server
+            string ServerResult = LocalClient.WaitForResult();
+            return bool.Parse(ServerResult);
         }
         #endregion
 
@@ -104,22 +110,34 @@ namespace IndieGoat.Net.SSH
         //Starts the ssh service, on command
         public void StartSSHService(string SSHIP, string SSHPORT, string SSHUSERNAME, string SSHPASSWORD, bool CreateNoWindow = true, bool RedirectOutput = true)
         {
+            Process[] Processes = Process.GetProcessesByName(ApplicationDefaultName);
+            Console.WriteLine(Processes.Length);
+           
+            if (Processes.Length > 0)
+            {
+                SSHServiceProcess = Processes[0];
+                
+            }
+            else
+            {
+                RedirectStandardOutput = RedirectOutput;
 
-            RedirectStandardOutput = RedirectOutput;
+                SSHServiceProcess = new Process();
+                SSHServiceProcess.StartInfo.UseShellExecute = false;
+                SSHServiceProcess.StartInfo.RedirectStandardInput = true;
+                SSHServiceProcess.StartInfo.RedirectStandardOutput = true;
 
-            SSHServiceProcess = new Process();
-            SSHServiceProcess.StartInfo.UseShellExecute = false;
-            SSHServiceProcess.StartInfo.RedirectStandardInput = true;
-            SSHServiceProcess.StartInfo.RedirectStandardOutput = true;
+                SSHServiceProcess.StartInfo.FileName = ApplicationDirectory + ApplicationName;
+                SSHServiceProcess.StartInfo.CreateNoWindow = CreateNoWindow;
 
-            SSHServiceProcess.StartInfo.FileName = ApplicationDirectory + ApplicationName;
-            SSHServiceProcess.StartInfo.CreateNoWindow = CreateNoWindow;
+                SSHServiceProcess.StartInfo.Arguments = SSHIP + " " + SSHPORT + " " + SSHUSERNAME + " " + SSHPASSWORD;
+                SSHServiceProcess.Start();
 
-            SSHServiceProcess.StartInfo.Arguments = SSHIP + " " + SSHPORT + " " + SSHUSERNAME + " " + SSHPASSWORD;
-            SSHServiceProcess.Start();
+                Console.WriteLine("started process");
+                IsRunning = true;
+            }
 
-            Console.WriteLine("started process");
-            IsRunning = true;
+            LocalClient.ConnectToRemoteServer();
         }
 
         #endregion
@@ -136,6 +154,7 @@ namespace IndieGoat.Net.SSH
             public void ConnectToRemoteServer(string serverIP=  "localhost", int serverPort = 4850)
             {
                 //Connects to the server
+                client = new TcpClient();
                 client.Connect(serverIP, serverPort);
             }
 
