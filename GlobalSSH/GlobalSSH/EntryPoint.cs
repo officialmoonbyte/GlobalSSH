@@ -133,7 +133,7 @@ namespace IndieGoat.Net.SSH
             /// <summary>
             /// Connects to a local command server.
             /// </summary>
-            public void ConnectToRemoteServer(string serverIP, int serverPort = 4850)
+            public void ConnectToRemoteServer(string serverIP=  "localhost", int serverPort = 4850)
             {
                 //Connects to the server
                 client.Connect(serverIP, serverPort);

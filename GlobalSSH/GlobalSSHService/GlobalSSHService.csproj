@@ -54,6 +54,8 @@
     <Compile Include="Console.cs" />
     <Compile Include="ILogger.cs" />
     <Compile Include="PublicResources.cs" />
+    <Compile Include="Server\Server.cs" />
+    <Compile Include="Server\ServerClient.cs" />
     <Compile Include="service.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="Properties\Resources.resx">
