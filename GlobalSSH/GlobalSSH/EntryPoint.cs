@@ -80,9 +80,8 @@ namespace IndieGoat.Net.SSH
                 return false;
             }
 
-            //Get input of the command
-            StreamWriter stream = SSHServiceProcess.StandardInput;
-            stream.WriteLine("FORWARD " + PORT + " " + LOCALHOST);
+            //Send command to tcp server
+            LocalClient.SendCommand("FORWARD", new string[] { PORT, LOCALHOST });
 
             //Gets the result from the server.
             string ServerResult = LocalClient.WaitForResult();
@@ -124,8 +123,6 @@ namespace IndieGoat.Net.SSH
 
                 SSHServiceProcess = new Process();
                 SSHServiceProcess.StartInfo.UseShellExecute = false;
-                SSHServiceProcess.StartInfo.RedirectStandardInput = true;
-                SSHServiceProcess.StartInfo.RedirectStandardOutput = true;
 
                 SSHServiceProcess.StartInfo.FileName = ApplicationDirectory + ApplicationName;
                 SSHServiceProcess.StartInfo.CreateNoWindow = CreateNoWindow;
