@@ -148,8 +148,9 @@ namespace IndieGoat.Net.SSH
             /// <summary>
             /// Connects to a local command server.
             /// </summary>
-            public void ConnectToRemoteServer(string serverIP=  "localhost", int serverPort = 4850)
+            public void ConnectToRemoteServer(string serverIP = "localhost", int serverPort = 4850)
             {
+                Thread.Sleep(1000);
                 //Connects to the server
                 client = new TcpClient();
                 client.Connect(serverIP, serverPort);
@@ -170,16 +171,22 @@ namespace IndieGoat.Net.SSH
             /// <returns>Return value of the server</returns>
             public string WaitForResult()
             {
-                //Gets data from the server.
-                Console.WriteLine("[SSH] Receiving Server Data! Please Wait...");
-                byte[] data = new byte[client.ReceiveBufferSize];
-                int receivedDataLength = client.Client.Receive(data);
+                string stringData = null;
 
-                //Converts the value to a string
-                string stringData = Encoding.ASCII.GetString(data, 0, receivedDataLength);
+                try
+                {
+                    //Gets data from the server.
+                    Console.WriteLine("[SSH] Receiving Server Data! Please Wait...");
+                    byte[] data = new byte[client.ReceiveBufferSize];
+                    int receivedDataLength = client.Client.Receive(data);
 
-                //Returns the server response
-                Console.WriteLine("[SSH] Server Response : " + stringData);
+                    //Converts the value to a string
+                    stringData = Encoding.ASCII.GetString(data, 0, receivedDataLength);
+
+                    //Returns the server response
+                    Console.WriteLine("[SSH] Server Response : " + stringData);
+                }
+                catch { }
                 return stringData;
             }
 

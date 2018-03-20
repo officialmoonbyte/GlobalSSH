@@ -1,4 +1,5 @@
-﻿using IndieGoat.Net.SSH.App;
+﻿using GlobalDYNUpdater;
+using IndieGoat.Net.SSH.App;
 using Renci.SshNet;
 using System;
 using System.Net.Sockets;
@@ -60,24 +61,28 @@ namespace GlobalSSHService.Server
                         if (CommandArgs[0] == "FORWARD")
                         {
                             //Get command vars
-                            string IP = CommandArgs[1];
-                            string PORT = CommandArgs[2];
+                            string IP = CommandArgs[2];
+                            string PORT = CommandArgs[1];
 
-                            //Forwards the port
-                            var port = new ForwardedPortLocal("127.0.0.1", uint.Parse(PORT), IP, uint.Parse(PORT));
-
-                            //Starts the forward port
-                            PublicResources.client.AddForwardedPort(port);
-                            port.Start();
-
-                            if (port.IsStarted)
+                            try
                             {
-                                service.server.SendClient(true.ToString());
+                                //Forwards the port
+                                var port = new ForwardedPortLocal("127.0.0.1", uint.Parse(PORT), IP, uint.Parse(PORT));
+
+                                //Starts the forward port
+                                PublicResources.client.AddForwardedPort(port);
+                                port.Start();
+
+                                if (port.IsStarted)
+                                {
+                                    service.server.SendClient(true.ToString());
+                                }
+                                else
+                                {
+                                    service.server.SendClient(false.ToString());
+                                }
                             }
-                            else
-                            {
-                                service.server.SendClient(false.ToString());
-                            }
+                            catch { service.server.SendClient(true.ToString()); }
                         }
                     }
                 }
@@ -93,22 +98,32 @@ namespace GlobalSSHService.Server
                 //Checks if the NetworkStream can read from the socket request.
                 if (m.CanRead)
                 {
-                    //Sets the byte value and then read the network stream.
-                    byte[] bytes = new byte[LocalClientConnection.ReceiveBufferSize];
-                    m.Read(bytes, 0, LocalClientConnection.ReceiveBufferSize);
+                    if (LocalClientConnection.Connected)
+                    {
+                        //Sets the byte value and then read the network stream.
+                        byte[] bytes = new byte[LocalClientConnection.ReceiveBufferSize];
+                        m.Read(bytes, 0, LocalClientConnection.ReceiveBufferSize);
 
-                    //Encodes the bytes into a string, and than trim the string.
-                    string ReceivedBytes = Encoding.UTF8.GetString(bytes);
-                    ReceivedBytes = ReceivedBytes.Trim('\0');
+                        //Encodes the bytes into a string, and than trim the string.
+                        string ReceivedBytes = Encoding.UTF8.GetString(bytes);
+                        ReceivedBytes = ReceivedBytes.Trim('\0');
 
-                    //List in console, client response
-                    Console.WriteLine("[INFO] Got client response! " + ReceivedBytes);
+                        //List in console, client response
+                        ILogger.AddToLog("INFO", "Got client response! " + ReceivedBytes);
 
-                    //Flushes the Network Stream
-                    m.Flush();
+                        //Flushes the Network Stream
+                        m.Flush();
 
-                    //Return bytes
-                    return ReceivedBytes;
+                        //Return bytes
+                        return ReceivedBytes;
+                    }
+                    else
+                    {
+                        Console.WriteLine("Client disconnected!");
+                        LocalClientConnection.Close();
+                        LocalClientConnection.Dispose();
+                        return null;
+                    }
                 }
                 else
                 {

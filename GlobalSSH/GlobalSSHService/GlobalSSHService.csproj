@@ -51,7 +51,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Console.cs" />
     <Compile Include="ILogger.cs" />
     <Compile Include="PublicResources.cs" />
     <Compile Include="Server\Server.cs" />

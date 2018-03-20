@@ -28,10 +28,6 @@ namespace IndieGoat.Net.SSH.App
 
             ILogger.SetLoggingEvents();
 
-            //Start the tcp local server
-            server = new Server();
-            server.StartServer();
-
             //SSH connection info
             PasswordConnectionInfo connectionInfo = new PasswordConnectionInfo(SSHIP, int.Parse(SSHPORT), SSHUSERNAME, SSHPASSWORD);
 
@@ -41,9 +37,9 @@ namespace IndieGoat.Net.SSH.App
 
             if (PublicResources.client.IsConnected)
             {
-                //Starts the console thread
-                mConsole.ConsoleThread();
-
+                //Start the tcp local server
+                server = new Server();
+                server.StartServer();
             }
             else
             {
