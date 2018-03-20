@@ -185,6 +185,19 @@ namespace IndieGoat.Net.SSH
                 Console.WriteLine("[SSH] Server Response : " + stringData);
                 return stringData;
             }
+
+            /// <summary>
+            /// Sends a command to the server
+            /// </summary>
+            public void SendCommand(string Command, string[] Args)
+            {
+                //Gets the string to send the server
+                string sendCommandServer; sendCommandServer = Command; for (int i = 0; i < Args.Length; i++)
+                { sendCommandServer += " " + Args[i]; }
+
+                //Sends the server data
+                client.Client.Send(Encoding.UTF8.GetBytes(sendCommandServer));
+            }
         }
 
         #endregion
