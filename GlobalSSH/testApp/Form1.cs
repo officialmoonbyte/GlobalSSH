@@ -14,6 +14,8 @@ namespace testApp
 {
     public partial class Form1 : Form
     {
+
+        GlobalSSH sshService;
         public Form1()
         {
             InitializeComponent();
@@ -21,20 +23,22 @@ namespace testApp
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            Thread thread = new Thread(new ThreadStart(() =>
-            {
-                GlobalSSH ssh = new GlobalSSH();
-                ssh.StartSSHService("indiegoat.us", "80", "public", "Public36", false, true);
-                bool b1 = ssh.ForwardLocalPort("3390", "192.168.0.11");
-                bool b2 = ssh.ForwardLocalPort("2445", "192.168.0.11");
-                bool b3 = ssh.ForwardLocalPort("3389", "192.168.0.11");
+            
+        }
 
-                Console.WriteLine("b1 : " + b1);
-                Console.WriteLine("b2 : " + b2);
-                Console.WriteLine("b3 : " + b3);
+        private void button1_Click(object sender, EventArgs e)
+        {
+            Console.WriteLine("Port Tunnel : " + sshService.TunnelLocalPort("192.168.0.11", "3389", true));
+        }
 
-                Console.WriteLine("DONE!");
-            })); thread.Start();
+        private void button2_Click(object sender, EventArgs e)
+        {
+            Console.WriteLine("Port Available : " + sshService.CheckLocalPort(445));
+        }
+
+        private void button3_Click(object sender, EventArgs e)
+        {
+            sshService = new GlobalSSH("indiegoat.us", 80, "public", "Public36", false);
         }
     }
 }

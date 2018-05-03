@@ -1,208 +1,125 @@
-﻿using System.IO;
-using System.Net;
-using System.Threading;
-using System.IO.Compression;
-using System.Diagnostics;
-using Ionic.Zip;
+﻿using System.Threading;
 using System;
 using System.Net.Sockets;
-using System.Text;
+using Renci.SshNet;
 
 namespace IndieGoat.Net.SSH
 {
     public class GlobalSSH
     {
 
-        #region Global vars
+        #region Vars
 
-        const string ApplicationDirectory = @"C:\IndieGoat\SSH\GlobalService\";
-        const string ApplicationZipDirectory = @"C:\IndieGoat\SSH\GlobalService\install.zip";
-        const string ApplicationName = @"GlobalSSHService.exe";
-        const string ApplicationDefaultName = "GlobalSSHService";
-        const string ApplicationURL = "https://dl.dropboxusercontent.com/s/i5mbboap1n3t81q/install.zip?dl=0";
-        bool RedirectStandardOutput = false;
+        public SshClient SSHClient;
 
-        Process SSHServiceProcess;
-
-        bool IsRunning = false;
-
-        TcpLocalClient LocalClient;
-        
         #endregion
 
-        #region Initialization
+        #region Startup
 
         /// <summary>
-        /// Initialize the ssh service
+        /// Connects to the SSH server on startup
         /// </summary>
-        public GlobalSSH()
+        public GlobalSSH(string SSHIP, int SSHPORT, string Username, string Password, bool AutoConnect = false)
         {
-            Console.WriteLine("bb1211");
-            //Check if application directory exist's
-            if (!Directory.Exists(ApplicationDirectory))
+            if (AutoConnect) ConnectSSH(SSHIP, SSHPORT, Username, Password);
+        }
+
+        #endregion
+
+        #region Connect
+
+        /// <summary>
+        /// Connects to the SSH server
+        /// </summary>
+        public void ConnectSSH(string SSHIP, int SSHPORT, string Username, string Password)
+        {
+            if (!this.IsConnected())
             {
-                //Creates the empty directory
-                Directory.CreateDirectory(ApplicationDirectory);
-            }
+                PasswordConnectionInfo connectionInfo = new PasswordConnectionInfo(SSHIP, SSHPORT, Username, Password);
 
-            //Checks if the application file exists
-            if (!File.Exists(ApplicationDirectory + ApplicationName))
+                SSHClient = new SshClient(connectionInfo);
+                SSHClient.Connect();
+            } else { Console.WriteLine("[GlobalSSH] SSH client is currently connected!"); }
+        }
+
+        /// <summary>
+        /// Gets the status of the SSH server to see if it is connected
+        /// </summary>
+        /// <returns></returns>
+        public bool IsConnected() { return SSHClient.IsConnected; }
+
+        #endregion
+
+        #region Port
+
+        #region Legacy
+
+        /// <summary>
+        /// Returns true if the port can be used.
+        /// </summary>
+        public bool CheckLocalPort(int PORT)
+        {
+            bool IsPortOpen = false;
+            using (TcpClient client = new TcpClient())
             {
-                //Initialize the new web client
-                WebClient client = new WebClient();
-
-                //Download's the file in the application directory
-                client.DownloadFile(ApplicationURL, ApplicationZipDirectory);
-
-                //Extracts the update
-                using (ZipFile zip = ZipFile.Read(ApplicationZipDirectory))
+                try
                 {
-                    zip.ExtractAll(ApplicationDirectory);
+                    client.Connect("127.0.0.1", PORT);
+                    IsPortOpen = false;
+                    client.Close();
                 }
+                catch { IsPortOpen = true; }
             }
 
-            LocalClient = new TcpLocalClient();
+            return IsPortOpen;
         }
 
-        #endregion
-
-        #region Commands
-
-        public void ShutdownApplication()
-        { SSHServiceProcess.Close(); }
-        public bool ForwardLocalPort(string PORT, string LOCALHOST)
+        public bool TunnelLocalPort(string IP, string PORT, bool Async = false)
         {
-            //Checks if the application has exited
-            if (SSHServiceProcess.HasExited)
+            if (CheckLocalPort(int.Parse(PORT)) && this.IsConnected())
             {
-                //Returns from the method if application is currently not running.
-                Console.WriteLine("Process is currently closed!");
-                return false;
-            }
+                var forPort = new ForwardedPortLocal("127.0.0.1", uint.Parse(PORT), IP, uint.Parse(PORT));
 
-            //Send command to tcp server
-            LocalClient.SendCommand("FORWARD", new string[] { PORT, LOCALHOST });
+                SSHClient.AddForwardedPort(forPort);
+                forPort.Start();
 
-            //Gets the result from the server.
-            string ServerResult = LocalClient.WaitForResult();
-            return bool.Parse(ServerResult);
-        }
-
-        public bool CheckPort(string PORT)
-        {
-            //Checks if the application has exited
-            if (SSHServiceProcess.HasExited)
-            {
-                //Returns from the method if application is currently not running
-                Console.WriteLine("Process is currently closed!");
-                return false;
-            }
-
-            //Gets the result from the server
-            string ServerResult = LocalClient.WaitForResult();
-            return bool.Parse(ServerResult);
-        }
-        #endregion
-
-        #region Startup of the SSH service
-
-        //Starts the ssh service, on command
-        public void StartSSHService(string SSHIP, string SSHPORT, string SSHUSERNAME, string SSHPASSWORD, bool CreateNoWindow = true, bool RedirectOutput = true)
-        {
-            Process[] Processes = Process.GetProcessesByName(ApplicationDefaultName);
-            Console.WriteLine(Processes.Length);
-           
-            if (Processes.Length > 0)
-            {
-                SSHServiceProcess = Processes[0];
-                
+                return forPort.IsStarted;
             }
             else
             {
-                RedirectStandardOutput = RedirectOutput;
+                Console.WriteLine("Port is currently in use! Ignoring incase port is open in diffrent ssh tunnel.");
 
-                SSHServiceProcess = new Process();
-                SSHServiceProcess.StartInfo.UseShellExecute = false;
-
-                SSHServiceProcess.StartInfo.FileName = ApplicationDirectory + ApplicationName;
-                SSHServiceProcess.StartInfo.CreateNoWindow = CreateNoWindow;
-
-                SSHServiceProcess.StartInfo.Arguments = SSHIP + " " + SSHPORT + " " + SSHUSERNAME + " " + SSHPASSWORD;
-                SSHServiceProcess.Start();
-
-                Console.WriteLine("started process");
-                IsRunning = true;
+                if (Async) ThreadedPortLocal(IP, PORT);
+                return false;
             }
-
-            LocalClient.ConnectToRemoteServer();
         }
 
         #endregion
 
-        #region Client
+        #region Threaded
 
-        public class TcpLocalClient
+        private void ThreadedPortLocal(string IP, string PORT)
         {
-            private TcpClient client;
+            Console.WriteLine("Started a Threaded Local Port thread... Waiting for port to be avaialble.");
 
-            /// <summary>
-            /// Connects to a local command server.
-            /// </summary>
-            public void ConnectToRemoteServer(string serverIP = "localhost", int serverPort = 4850)
+            new Thread(new ThreadStart(() =>
             {
-                Thread.Sleep(1000);
-                //Connects to the server
-                client = new TcpClient();
-                client.Connect(serverIP, serverPort);
-            }
-
-            /// <summary>
-            /// Disconnects from a local command server.
-            /// </summary>
-            public void Disconnect()
-            {
-                //Checks if client is connected, if true closes the connection
-                if (client.Connected) client.Close();
-            }
-
-            /// <summary>
-            /// Waits for a string from the server and then returns that string.
-            /// </summary>
-            /// <returns>Return value of the server</returns>
-            public string WaitForResult()
-            {
-                string stringData = null;
-
-                try
+                while (true)
                 {
-                    //Gets data from the server.
-                    Console.WriteLine("[SSH] Receiving Server Data! Please Wait...");
-                    byte[] data = new byte[client.ReceiveBufferSize];
-                    int receivedDataLength = client.Client.Receive(data);
+                    if (CheckLocalPort(int.Parse(PORT)) && this.IsConnected())
+                    {
+                        var forPort = new ForwardedPortLocal("127.0.0.1", uint.Parse(PORT), IP, uint.Parse(PORT));
 
-                    //Converts the value to a string
-                    stringData = Encoding.ASCII.GetString(data, 0, receivedDataLength);
+                        SSHClient.AddForwardedPort(forPort);
+                        forPort.Start();
+                    }
 
-                    //Returns the server response
-                    Console.WriteLine("[SSH] Server Response : " + stringData);
+                    Thread.Sleep(1000);
                 }
-                catch { }
-                return stringData;
-            }
-
-            /// <summary>
-            /// Sends a command to the server
-            /// </summary>
-            public void SendCommand(string Command, string[] Args)
-            {
-                //Gets the string to send the server
-                string sendCommandServer; sendCommandServer = Command; for (int i = 0; i < Args.Length; i++)
-                { sendCommandServer += " " + Args[i]; }
-
-                //Sends the server data
-                client.Client.Send(Encoding.UTF8.GetBytes(sendCommandServer));
-            }
+            })).Start();
         }
+
+        #endregion
 
         #endregion
 
