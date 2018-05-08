@@ -46,7 +46,7 @@ namespace IndieGoat.Net.SSH
         /// Gets the status of the SSH server to see if it is connected
         /// </summary>
         /// <returns></returns>
-        public bool IsConnected() { return SSHClient.IsConnected; }
+        public bool IsConnected() { try { if (SSHClient != null) { return SSHClient.IsConnected; } else { return false; } } catch { return false; } }
 
         #endregion
 
