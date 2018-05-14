@@ -68,7 +68,10 @@ namespace IndieGoat.Net.SSH
                     IsPortOpen = false;
                     client.Close();
                 }
-                catch { IsPortOpen = true; }
+                catch (Exception e)
+                {
+                    IsPortOpen = true;
+                }
             }
 
             return IsPortOpen;
