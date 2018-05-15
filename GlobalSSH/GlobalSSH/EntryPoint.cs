@@ -19,7 +19,7 @@ namespace IndieGoat.Net.SSH
         /// <summary>
         /// Connects to the SSH server on startup
         /// </summary>
-        public GlobalSSH(string SSHIP, int SSHPORT, string Username, string Password, bool AutoConnect = false)
+        public GlobalSSH(string SSHIP, int SSHPORT, string Username, string Password, bool AutoConnect = true)
         {
             if (AutoConnect) ConnectSSH(SSHIP, SSHPORT, Username, Password);
         }

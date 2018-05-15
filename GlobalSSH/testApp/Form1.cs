@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using IndieGoat.InideClient.Default;
 using IndieGoat.Net.SSH;
 
 namespace testApp
@@ -23,22 +24,9 @@ namespace testApp
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            
-        }
-
-        private void button1_Click(object sender, EventArgs e)
-        {
-            Console.WriteLine("Port Tunnel : " + sshService.TunnelLocalPort("192.168.0.11", "3389", true));
-        }
-
-        private void button2_Click(object sender, EventArgs e)
-        {
-            Console.WriteLine("Port Available : " + sshService.CheckLocalPort(445));
-        }
-
-        private void button3_Click(object sender, EventArgs e)
-        {
-            sshService = new GlobalSSH("indiegoat.us", 80, "public", "Public36", false);
+            IndieClient client = new IndieClient();
+            client.ConnectToRemoteServer("localhost", 5750);
+            client._ClientSender.SendCommand("teest", new string[] { "TEST" });
         }
     }
 }
