@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.Linq;
+using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -24,9 +25,9 @@ namespace testApp
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            IndieClient client = new IndieClient();
-            client.ConnectToRemoteServer("localhost", 5750);
-            client._ClientSender.SendCommand("teest", new string[] { "TEST" });
+            TcpClient client = new TcpClient();
+            client.Connect("localhost", 5750);
+            client.Client.Send(Encoding.UTF8.GetBytes("test"));
         }
     }
 }
